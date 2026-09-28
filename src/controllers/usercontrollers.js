@@ -2,6 +2,8 @@
 import { UserModel } from "../models/userModel.js";
 import { userValidator, loginValidator } from "../validator/userValidator.js";
 import bcrypt from "bcryptjs";
+import { generateToken } from "../utility/generateToken.js";
+
 
 export const getHome = (req, res) => {
   res.send("Home Page!, server is running.");
@@ -39,6 +41,17 @@ export const postUser = async(req, res) => {
     email,
     password  
   })
+
+  const token = await generateToken(newUser._id)
+
+  res.cookie("auth-token", token, {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === "production",
+    sameSite: "lax",
+    maxAge: 7 * 24 * 60 * 60 * 1000 // 7 days convert to milliseconds
+  })
+
+
 
   res.status(201).json({
     data: newUser,
@@ -79,6 +92,18 @@ export const login = async (req, res) => {
         message: "Invalid credentials, please try again"
       });
     }
+
+    const token = await generateToken(existingUser._id)
+
+    res.cookie("auth-token", token, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      sameSite: "lax",
+      maxAge: 7 * 24 * 60 * 60 * 1000 // 7 days convert to milliseconds
+    })
+
+    
+
 
     res.status(200).json({
       message: " User Login successfully",
