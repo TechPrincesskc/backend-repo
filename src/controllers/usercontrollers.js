@@ -52,7 +52,6 @@ export const postUser = async(req, res) => {
   })
 
 
-
   res.status(201).json({
     data: newUser,
     message: "User created successfully"
@@ -102,13 +101,34 @@ export const login = async (req, res) => {
       maxAge: 7 * 24 * 60 * 60 * 1000 // 7 days convert to milliseconds
     })
 
-    
-
-
     res.status(200).json({
+      data: existingUser,
       message: " User Login successfully",
     })
 
+
+  } catch (err) {
+    console.error(err)
+    throw new Error(err)
+  }
+}
+
+
+export const getSingleuser = async (req, res) => {
+  try {
+    const {id} = req.params
+    const user = await UserModel.findById(id).select("-password") //always exclude the password field when returning user data
+
+    if(!user) {
+      return res.status(404).json({
+        message: `User with ${id} does not exist`
+      })
+    }
+
+    res.status(200).json({
+      data: user,
+      message: `user with ${id} retrieved successfully`
+    })
 
   } catch (err) {
     console.error(err)
